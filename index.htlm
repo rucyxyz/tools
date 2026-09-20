@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Message Raider · ez tools</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+        /* --- リセット & ベース --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-color: #070b16;
+            --bg-elevated: #0d1424;
+            --panel-bg: rgba(16, 24, 42, 0.86);
+            --panel-solid: #10182a;
+            --border-color: rgba(148, 163, 184, 0.16);
+            --border-strong: rgba(125, 211, 252, 0.36);
+            --text-primary: #f3f7ff;
+            --text-secondary: #94a3b8;
+            --accent-color: #38bdf8;
+            --accent-hover: #67d2fa;
+            --accent-violet: #8b5cf6;
+            --danger-color: #fb7185;
+            --danger-hover: #f43f5e;
+            --success-color: #34d399;
+            --warning-color: #fbbf24;
+            --console-bg: #080d18;
+            --shadow-sm: 0 12px 30px rgba(0, 0, 0, 0.22);
+            --shadow-lg: 0 24px 70px rgba(0, 0, 0, 0.38);
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-mono: 'JetBrains Mono', Consolas, monospace;
+        }
+
+        html {
+            min-width: 320px;
+            background: var(--bg-color);
+            scroll-behavior: smooth;
+        }
+
+        body {
+            position: relative;
+            min-height: 100vh;
+            padding: 54px 24px 72px;
+            overflow-x: hidden;
+            background: radial-gradient(circle at 10% 0%, rgba(56, 189, 248, 0.12), transparent 28rem),
+                radial-gradient(circle at 90% 8%, rgba(139, 92, 246, 0.14), transparent 30rem),
+                linear-gradient(145deg, #070b16 0%, #090f1d 48%, #080c17 100%);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 15px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* グリッドパターン */
+        body::before {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            content: '';
+            opacity: 0.24;
+            background-image: linear-gradient(rgba(148, 163, 184, 0.055) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 163, 184, 0.055) 1px, transparent 1px);
+            background-size: 44px 44px;
+            mask-image: linear-gradient(to bottom, black, transparent 78%);
+        }
+
+        /* --- アンビエントオーブ --- */
+        .ambient-layer {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .ambient-orb {
+            position: absolute;
+            display: block;
+            border-radius: 50%;
+            filter: blur(14px);
+            opacity: 0.42;
+            will-change: transform;
+        }
+
+        .ambient-orb-one {
+            top: -180px;
+            left: -140px;
+            width: 430px;
+            height: 430px;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.22), transparent 68%);
+            animation: ambientFloatOne 15s ease-in-out infinite alternate;
+        }
+
+        .ambient-orb-two {
+            top: 5%;
+            right: -210px;
+            width: 520px;
+            height: 520px;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.22), transparent 67%);
+            animation: ambientFloatTwo 19s ease-in-out infinite alternate;
+        }
+
+        .ambient-orb-three {
+            bottom: -260px;
+            left: 32%;
+            width: 560px;
+            height: 560px;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.15), transparent 66%);
+            animation: ambientFloatThree 21s ease-in-out infinite alternate;
+        }
+
+        @keyframes ambientFloatOne {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(70px, 60px) scale(1.08); }
+        }
+        @keyframes ambientFloatTwo {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(-90px, 40px) scale(1.12); }
+        }
+        @keyframes ambientFloatThree {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, -70px) scale(1.06); }
+        }
+
+        /* --- コンテナ --- */
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* --- ヘッダー --- */
+        header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .brand-block {
+            text-align: center;
+        }
+
+        #app-title {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #f3f7ff 0%, #38bdf8 70%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        #app-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+            margin-top: -4px;
+        }
+
+        .developer-card {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px 6px 14px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 40px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(4px);
+        }
+
+        .developer-card strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .header-action {
+            margin-top: 5px;
+        }
+
+        .discord-promo-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            background: #5865f2;
+            padding: 8px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 20px;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(88, 101, 242, 0.4);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .discord-promo-btn:hover {
+            background: #4752c4;
+            transform: scale(1.02);
+        }
+
+        .discord-promo-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* --- ツール選択 --- */
+        .tool-selector {
+            background: var(--panel-bg);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tool-selector-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .tool-selector-sub {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .tool-selector-sub strong {
+            color: var(--warning-color);
+        }
+
+        .tool-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tool-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: var(--panel-solid);
+            border: 1px solid var(--border-color);
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: border-color 0.2s, color 0.2s;
+            cursor: default;
+        }
+
+        .tool-chip .status-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--success-color);
+            box-shadow: 0 0 6px rgba(52, 211, 153, 0.4);
+            flex-shrink: 0;
+        }
+
+        .tool-chip.active {
+            border-color: var(--border-strong);
+            color: var(--text-primary);
+        }
+
+        .tool-chip.active .status-dot {
+            background: var(--accent-color);
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+        }
+
+        /* --- メインカード --- */
+        .main-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 28px 28px 32px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .main-card-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: -0.01em;
+            background: linear-gradient(135deg, #f3f7ff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* --- セクション --- */
+        .section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .section-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .section-note {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .section-note-sm {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: -2px;
+            margin-bottom: 6px;
+        }
+
+        /* --- フォーム要素 --- */
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--console-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: var(--font-sans);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        }
+
+        textarea {
+            min-height: 54px;
+            resize: vertical;
+            font-family: var(--font-mono);
+            font-size: 13px;
+        }
+
+        select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* --- フレックス --- */
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-end;
+        }
+
+        .flex-item {
+            flex: 1;
+            min-width: 130px;
+        }
+
+        .flex-item label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 4px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .input-group input[type="number"] {
+            width: 80px;
+            flex-shrink: 0;
+        }
+
+        .input-group span {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-right: 4px;
+        }
+
+        /* --- ボタン --- */
+        .btn {
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 8px 18px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            white-space: nowrap;
+            font-family: var(--font-sans);
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: #0a0f1f;
+        }
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 4px 16px rgba(56, 189, 248, 0.3);
+        }
+
+        .btn-violet {
+            background: var(--accent-violet);
+            color: #fff;
+        }
+        .btn-violet:hover {
+            background: #7c3aed;
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: #0a0f1f;
+        }
+        .btn-success:hover {
+            background: #2dd4bf;
+            box-shadow: 0 4px 16px rgba(52, 211, 153, 0.3);
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: #0a0f1f;
+        }
+        .btn-warning:hover {
+            background: #f59e0b;
+            box-shadow: 0 4px 16px rgba(251, 191, 36, 0.3);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: #0a0f1f;
+        }
+        .btn-danger:hover {
+            background: var(--danger-hover);
+            box-shadow: 0 4px 16px rgba(251, 113, 133, 0.3);
+        }
+
+        .btn-sm {
+            height: 34px;
+            font-size: 12px;
+            padding: 0 16px;
+        }
+
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* --- チャンネルID取得 --- */
+        .channel-fetch-area {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        .channel-fetch-area input {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .channel-fetch-area .btn {
+            flex-shrink: 0;
+        }
+
+        /* --- サブセクション --- */
+        .sub-section {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* --- チェックボックス（スイッチ風） --- */
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 4px 0;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-color);
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        /* --- 折りたたみ --- */
+        .collapse-item {
+            background: var(--console-bg);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .collapse-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            cursor: pointer;
+            user-select: none;
+            background: rgba(255, 255, 255, 0.02);
+            transition: background 0.2s;
+        }
+
+        .collapse-header:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .collapse-header span {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .collapse-header .arrow {
+            font-size: 12px;
+            color: var(--text-secondary);
+            transition: transform 0.3s;
+        }
+
+        .collapse-body {
+            padding: 0 16px 16px;
+            display: none;
+        }
+
+        .collapse-item.open .collapse-body {
+            display: block;
+        }
+
+        .collapse-item.open .collapse-header .arrow {
+            transform: rotate(180deg);
+        }
+
+        .collapse-body .checkbox-label {
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .collapse-body .checkbox-label:last-child {
+            border-bottom: none;
+        }
+
+        /* --- アクションエリア --- */
+        .action-area {
+            margin-top: 24px;
+        }
+
+        .action-area .btn {
+            height: 50px;
+            font-size: 18px;
+            letter-spacing: 0.5px;
+            border-radius: 40px;
+            margin-bottom: 12px;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .action-row .btn {
+            flex: 1;
+            height: 46px;
+            font-size: 15px;
+            border-radius: 40px;
+            margin-bottom: 0;
+        }
+
+        /* --- ログエリア --- */
+        .log-area {
+            margin-top: 24px;
+        }
+
+        .log-area .section-label {
+            margin-bottom: 6px;
+        }
+
+        #logBox {
+            width: 100%;
+            height: 170px;
+            background: var(--console-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: #a6e3a1;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            padding: 12px 16px;
+            resize: none;
+            outline: none;
+            overflow-y: auto;
+            line-height: 1.7;
+        }
+
+        #logBox:focus {
+            border-color: var(--accent-color);
+        }
+
+        #logBox::placeholder {
+            color: var(--text-secondary);
+            font-family: var(--font-sans);
+        }
+
+        /* ログ内の色分け */
+        .log-time {
+            color: var(--text-secondary);
+        }
+        .log-success {
+            color: var(--success-color);
+        }
+        .log-error {
+            color: var(--danger-color);
+        }
+        .log-warning {
+            color: var(--warning-color);
+        }
+
+        /* --- レスポンシブ --- */
+        @media (max-width: 600px) {
+            body {
+                padding: 24px 16px 48px;
+            }
+            .container {
+                max-width: 100%;
+            }
+            .main-card {
+                padding: 20px 16px 24px;
+            }
+            .flex-row {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .flex-item {
+                min-width: 100%;
+            }
+            .input-group input[type="number"] {
+                width: 100%;
+            }
+            .channel-fetch-area {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .channel-fetch-area .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .action-row {
+                flex-direction: row;
+            }
+            .btn {
+                font-size: 13px;
+                height: 38px;
+            }
+            .action-area .btn {
+                height: 46px;
+                font-size: 16px;
+            }
+            .action-row .btn {
+                height: 42px;
+                font-size: 13px;
+            }
+            .tool-grid {
+                gap: 6px;
+            }
+            .tool-chip {
+                font-size: 12px;
+                padding: 4px 12px;
+            }
+            #app-title {
+                font-size: 26px;
+            }
+            .brand-block {
+                margin-bottom: 4px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .action-row {
+                flex-direction: column;
+            }
+            .action-row .btn {
+                width: 100%;
+            }
+        }
+
+        /* --- スクロールバー --- */
+        #logBox::-webkit-scrollbar {
+            width: 6px;
+        }
+        #logBox::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #logBox::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        #logBox::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- アンビエントオーブ -->
+    <div class="ambient-layer" aria-hidden="true">
+        <span class="ambient-orb ambient-orb-one"></span>
+        <span class="ambient-orb ambient-orb-two"></span>
+        <span class="ambient-orb ambient-orb-three"></span>
+    </div>
+
+    <div class="container">
+
+        <!-- ヘッダー -->
+        <header>
+            <div class="brand-block">
+                <h1 id="app-title">ez private tools</h1>
+                <p id="app-subtitle">えだまめ管理</p>
+            </div>
+            <div class="developer-card">
+                <span>DEVELOPED BY</span>
+                <strong>Dev cwx99</strong>
+            </div>
+            <div class="header-action">
+                <a href="https://discord.gg/NZd2ZrQYN9" target="_blank" rel="noopener noreferrer" class="discord-promo-btn">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .078-.01c3.927 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .079.009c.12.098.245.195.372.288a.077.077 0 0 1-.006.128 12.299 12.299 0 0 1-1.873.891.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 5.994-3.03.078.078 0 0 0 .03-.057c.42-4.476-.432-9.011-2.55-12.66a.07.07 0 0 0-.032-.027zM8.523 15.012c-1.174 0-2.134-1.08-2.134-2.408 0-1.326.94-2.408 2.134-2.408 1.194 0 2.154 1.08 2.154 2.408 0 1.328-.94 2.408-2.154 2.408zm6.954 0c-1.174 0-2.134-1.08-2.134-2.408 0-1.326.94-2.408 2.134-2.408 1.194 0 2.154 1.08 2.154 2.408 0 1.328-.94 2.408-2.154 2.408z"/>
+                    </svg>
+                    Join Discord
+                </a>
+            </div>
+        </header>
+
+        <!-- ツール選択 -->
+        <div class="tool-selector">
+            <div class="tool-selector-label">📂 ツールを選択</div>
+            <div class="tool-selector-sub">危ないツールを使用せずに。<strong>今すぐご退出をｗ</strong></div>
+            <div class="tool-grid">
+                <span class="tool-chip active"><span class="status-dot"></span>Raider</span>
+                <span class="tool-chip"><span class="status-dot"></span>HypeSquad</span>
+                <span class="tool-chip"><span class="status-dot"></span>スラッシュSpammer</span>
+                <span class="tool-chip"><span class="status-dot"></span>チェッカー</span>
+                <span class="tool-chip"><span class="status-dot"></span>スレッドSpammer</span>
+                <span class="tool-chip"><span class="status-dot"></span>フォーラムSpammer</span>
+                <span class="tool-chip"><span class="status-dot"></span>プロフ更新</span>
+                <span class="tool-chip"><span class="status-dot"></span>User install</span>
+                <span class="tool-chip"><span class="status-dot"></span>グループSpam</span>
+                <span class="tool-chip"><span class="status-dot"></span>グループ退出</span>
+                <span class="tool-chip"><span class="status-dot"></span>WebhookSpam</span>
+                <span class="tool-chip"><span class="status-dot"></span>リアクションSpam</span>
+                <span class="tool-chip"><span class="status-dot"></span>サウンドSpam</span>
+                <span class="tool-chip"><span class="status-dot"></span>YouTube Raider</span>
+                <span class="tool-chip"><span class="status-dot"></span>IDチェッカー</span>
+                <span class="tool-chip"><span class="status-dot"></span>招待Spammer</span>
+                <span class="tool-chip"><span class="status-dot"></span>Token Joiner</span>
+                <span class="tool-chip"><span class="status-dot"></span>Emoji Creator</span>
+            </div>
+        </div>
+
+        <!-- メインカード -->
+        <div class="main-card">
+            <div class="main-card-title">⚡ Message Raider</div>
+
+            <!-- トークン -->
+            <div class="section">
+                <div class="section-label">トークン</div>
+                <div class="section-note">カンマ / 改行 / スペースで区切る</div>
+                <textarea id="tokens" placeholder="MTM10Dc4MTE3NTIzMzIz1MzU*****,MTEwMDUsNj1c1NjQ1NjE2MTMwM*****,..."></textarea>
+            </div>
+
+            <!-- サーバーID -->
+            <div class="section">
+                <div class="section-label">サーバーID</div>
+                <input id="serverId" type="text" placeholder="123456789012345678" />
+            </div>
+
+            <!-- チャンネルID + 取得ボタン -->
+            <div class="section">
+                <div class="section-label">チャンネルID</div>
+                <div class="section-note">カンマ / 改行 / スペースで区切る</div>
+                <div class="channel-fetch-area">
+                    <input id="channelId" type="text" placeholder="123456789012345678,123456789012345678,..." />
+                    <button class="btn btn-primary btn-sm" id="fetchChannelBtn">チャンネルID取得</button>
+                </div>
+            </div>
+
+            <!-- チャンネル自動取得（メッセージ内容） -->
+            <div class="section">
+                <div class="section-label">チャンネル自動取得</div>
+                <div class="section-note">メッセージ内容</div>
+                <textarea id="messageContent" placeholder="送信するメッセージを入力"></textarea>
+            </div>
+
+            <!-- メッセージ送信間隔 / 上限 -->
+            <div class="section">
+                <div class="flex-row">
+                    <div class="flex-item">
+                        <div class="section-label">メッセージ送信間隔</div>
+                        <div class="input-group">
+                            <input id="msgDelay" type="number" value="0" />
+                            <span>秒</span>
+                        </div>
+                    </div>
+                    <div class="flex-item">
+                        <div class="section-label">メッセージ送信上限</div>
+                        <div class="input-group">
+                            <input id="msgCount" type="number" value="0" />
+                            <span>回</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- メッセージ設定 -->
+            <div class="section">
+                <div class="section-label">メッセージ設定</div>
+                <div class="section-note">メッセージのユーザーID</div>
+                <div class="section-note-sm">カンマ / 改行 / スペースで区切る</div>
+                <textarea id="userIds" placeholder="123456789012345678,123456789012345678"></textarea>
+            </div>
+
+            <!-- メッセージ自動取得 -->
+            <div class="section">
+                <div class="section-label">メッセージ自動取得</div>
+                <div class="section-note">メッセージ自動取得チャンネルID</div>
+                <div class="section-note-sm">空の場合はメッセージのチャンネルIDを使用</div>
+                <input id="autoChannelId" type="text" placeholder="チャンネルID" />
+                <div class="sub-section">
+                    <div class="flex-row">
+                        <div class="flex-item">
+                            <label>取得する人数</label>
+                            <div class="input-group">
+                                <input id="fetchCount" type="number" value="100" />
+                                <span>人</span>
+                                <button class="btn btn-primary btn-sm" id="totalFetchBtn">総数取得</button>
+                            </div>
+                        </div>
+                        <div class="flex-item">
+                            <label>ランダムメッセージを取得する人数</label>
+                            <div class="input-group">
+                                <input id="randomCount" type="number" value="1" />
+                                <span>人</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 折りたたみ項目（詳細設定） -->
+            <div class="section" style="border-bottom: 1px solid var(--border-color);">
+                <div class="section-label" style="margin-bottom: 10px;">🔧 詳細設定</div>
+
+                <div class="collapse-item" id="collapseMention">
+                    <div class="collapse-header" data-target="collapseMention">
+                        <span>メンション設定</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="collapse-body">
+                        <label class="checkbox-label"><input type="checkbox" id="optMentionAll" /> @everyone を許可</label>
+                        <label class="checkbox-label"><input type="checkbox" id="optMentionHere" /> @here を許可</label>
+                        <label class="checkbox-label"><input type="checkbox" id="optMentionRole" /> ロールメンションを許可</label>
+                    </div>
+                </div>
+
+                <div class="collapse-item" id="collapseNewline">
+                    <div class="collapse-header" data-target="collapseNewline">
+                        <span>改行設定</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="collapse-body">
+                        <label class="checkbox-label"><input type="checkbox" id="optNewlineKeep" /> 改行を保持する</label>
+                        <label class="checkbox-label"><input type="checkbox" id="optNewlineRandom" /> ランダムに改行を挿入</label>
+                    </div>
+                </div>
+
+                <div class="collapse-item" id="collapseSend">
+                    <div class="collapse-header" data-target="collapseSend">
+                        <span>メッセージ送信設定</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="collapse-body">
+                        <label class="checkbox-label"><input type="checkbox" id="optTts" /> TTS（読み上げ）を有効</label>
+                        <label class="checkbox-label"><input type="checkbox" id="optEmbed" /> 埋め込みリンクを展開</label>
+                    </div>
+                </div>
+
+                <div class="collapse-item" id="collapseReaction">
+                    <div class="collapse-header" data-target="collapseReaction">
+                        <span>リアクション設定</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="collapse-body">
+                        <label class="checkbox-label"><input type="checkbox" id="optReactAll" /> 全メッセージにリアクション</label>
+                        <label class="checkbox-label"><input type="checkbox" id="optReactRandom" /> ランダムにリアクション</label>
+                    </div>
+                </div>
+
+                <div class="collapse-item" id="collapseOnOff">
+                    <div class="collapse-header" data-target="collapseOnOff">
+                        <span>オン / オフ設定</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="collapse-body">
+                        <label class="checkbox-label"><input type="checkbox" id="optEnableAll" /> 全機能を有効化</label>
+                        <label class="checkbox-label"><input type="checkbox" id="optSafeMode" /> セーフモード（低速）</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 投票設定 -->
+            <div class="section">
+                <div class="section-label">投票設定</div>
+                <input id="pollTitle" type="text" placeholder="投票タイトル" style="margin-bottom: 8px;" />
+                <div class="section-note">投票選択</div>
+                <div class="section-note-sm">カンマ / 改行 / スペースで区切る</div>
+                <input id="pollOptions" type="text" placeholder="選択肢1,選択肢2,..." />
+                <button class="btn btn-primary btn-sm" id="pollStopBtn" style="margin-top: 10px;">投票を強制終了</button>
+            </div>
+
+            <!-- メッセージ転送設定 -->
+            <div class="section">
+                <div class="section-label">メッセージ転送設定</div>
+                <div class="section-note">転送するメッセージURL</div>
+                <input id="forwardUrl" type="text" placeholder="https://discord.com/channels/123456789012345678/123456789012345678/123456789012345678" />
+            </div>
+
+            <!-- リプライ設定 -->
+            <div class="section">
+                <div class="section-label">リプライ設定</div>
+                <div class="flex-row">
+                    <div class="flex-item">
+                        <label>取得件数</label>
+                        <div class="input-group">
+                            <input id="replyCount" type="number" value="20" />
+                            <span>件</span>
+                            <button class="btn btn-primary btn-sm" id="historyBtn">履歴取得</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-note" style="margin-top: 10px;">リプライ先メッセージ（手動選択）</div>
+                <select id="replySelect" disabled>
+                    <option>-- 履歴を取得してから選択 --</option>
+                </select>
+            </div>
+
+            <!-- オンボーディング / 認証設定 -->
+            <div class="section" style="border-bottom: none;">
+                <div class="section-label">オンボーディング / 認証設定</div>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="autoOnboarding" /> オンボーディング &amp; 認証を自動解決
+                </label>
+                <div class="section-note" style="margin-top: 6px;">有効にすると、メンバーを許可したユーザーがオンボーディングと認証を自動で完了します。</div>
+                <div class="section-note-sm">ユーザーの回答は1回だけ取得してキャッシュし、全ユーザーで使用します。</div>
+            </div>
+
+            <!-- アクションエリア -->
+            <div class="action-area">
+                <button class="btn btn-success btn-block" id="executeBtn">実行</button>
+                <div class="action-row">
+                    <button class="btn btn-warning" id="spamStopBtn">スパム停止</button>
+                    <button class="btn btn-danger" id="leaveBtn">サーバー退出</button>
+                </div>
+            </div>
+
+            <!-- ログエリア -->
+            <div class="log-area">
+                <div class="section-label">📋 ログ</div>
+                <textarea id="logBox" readonly placeholder="ここに実行ログが表示されます..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // --- DOM参照 ---
+            const logBox = document.getElementById('logBox');
+
+            // 保存対象の入力要素ID
+            const saveTargets = [
+                'tokens', 'serverId', 'channelId', 'messageContent',
+                'msgDelay', 'msgCount', 'userIds', 'autoChannelId',
+                'fetchCount', 'randomCount', 'pollTitle', 'pollOptions',
+                'forwardUrl', 'replyCount'
+            ];
+
+            // --- ログ関数 ---
+            function logMessage(msg, type) {
+                const time = new Date().toLocaleTimeString();
+                let colorClass = '';
+                if (type === 'success') colorClass = 'log-success';
+                else if (type === 'error') colorClass = 'log-error';
+                else if (type === 'warning') colorClass = 'log-warning';
+
+                const entry = document.createElement('div');
+                entry.innerHTML =
+                    `<span class="log-time">[${time}]</span> <span class="${colorClass}">${msg}</span>`;
+                logBox.appendChild(entry);
+                logBox.scrollTop = logBox.scrollHeight;
+
+                // プレースホルダーを除去
+                if (logBox.hasAttribute('placeholder')) {
+                    logBox.removeAttribute('placeholder');
+                }
+
+                // 古いログを削除（200件まで保持）
+                while (logBox.children.length > 200) {
+                    logBox.removeChild(logBox.firstChild);
+                }
+            }
+
+            // --- localStorage 保存 / 復元 ---
+            function saveInputs() {
+                saveTargets.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) localStorage.setItem('mr_' + id, el.value);
+                });
+                document.querySelectorAll('input[type="checkbox"]').forEach(el => {
+                    localStorage.setItem('mr_' + el.id, el.checked ? 'true' : 'false');
+                });
+                const sel = document.getElementById('replySelect');
+                if (sel) localStorage.setItem('mr_replySelect', sel.value);
+            }
+
+            function loadInputs() {
+                saveTargets.forEach(id => {
+                    const el = document.getElementById(id);
+                    const val = localStorage.getItem('mr_' + id);
+                    if (el && val !== null) el.value = val;
+                });
+                document.querySelectorAll('input[type="checkbox"]').forEach(el => {
+                    const val = localStorage.getItem('mr_' + el.id);
+                    if (val !== null) el.checked = (val === 'true');
+                });
+                const sel = document.getElementById('replySelect');
+                const selVal = localStorage.getItem('mr_replySelect');
+                if (sel && selVal !== null) sel.value = selVal;
+            }
+
+            function bindSaveEvents() {
+                saveTargets.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.addEventListener('input', saveInputs);
+                });
+                document.querySelectorAll('input[type="checkbox"]').forEach(el => {
+                    el.addEventListener('change', saveInputs);
+                });
+                const sel = document.getElementById('replySelect');
+                if (sel) sel.addEventListener('change', saveInputs);
+            }
+
+            // --- 折りたたみ ---
+            function initCollapses() {
+                document.querySelectorAll('.collapse-header').forEach(header => {
+                    header.addEventListener('click', function(e) {
+                        const targetId = this.dataset.target;
+                        const item = document.getElementById(targetId);
+                        if (item) {
+                            item.classList.toggle('open');
+                            localStorage.setItem('mr_collapse_' + targetId, item.classList.contains('open') ?
+                                'open' : 'closed');
+                        }
+                    });
+                });
+
+                document.querySelectorAll('.collapse-item').forEach(item => {
+                    const state = localStorage.getItem('mr_collapse_' + item.id);
+                    if (state === 'open') {
+                        item.classList.add('open');
+                    } else if (state === 'closed') {
+                        item.classList.remove('open');
+                    }
+                });
+            }
+
+            // --- ボタンアクション ---
+            function initActions() {
+                // 実行
+                document.getElementById('executeBtn').addEventListener('click', function() {
+                    const tokens = document.getElementById('tokens').value.trim();
+                    const channel = document.getElementById('channelId').value.trim();
+                    const msg = document.getElementById('messageContent').value.trim();
+                    const count = document.getElementById('msgCount').value || 0;
+                    const delay = document.getElementById('msgDelay').value || 0;
+
+                    logMessage('=== 実行開始 ===', 'success');
+                    logMessage(`トークン: ${tokens ? tokens.split(/[\n,，\s]+/).length : 0} 個`);
+                    logMessage(`チャンネル: ${channel ? channel.split(/[\n,，\s]+/).length : 0} 個`);
+                    logMessage(`メッセージ: "${msg.substring(0, 30)}${msg.length > 30 ? '...' : ''}"`);
+                    logMessage(`送信回数: ${count} 回, 遅延: ${delay} 秒`);
+                    logMessage('※ これはデモ動作です (実際の送信は行われません)', 'warning');
+                    logMessage('--- 実行完了 ---', 'success');
+                });
+
+                // スパム停止
+                document.getElementById('spamStopBtn').addEventListener('click', function() {
+                    logMessage('🛑 スパム停止を実行しました (デモ)', 'error');
+                });
+
+                // サーバー退出
+                document.getElementById('leaveBtn').addEventListener('click', function() {
+                    logMessage('⚠ サーバー退出を実行しました (デモ)', 'error');
+                });
+
+                // チャンネルID取得
+                document.getElementById('fetchChannelBtn').addEventListener('click', function() {
+                    logMessage('📡 チャンネルID取得を試行中... (デモ)', 'warning');
+                    const dummyId = Math.floor(Math.random() * 1000000000000000000).toString();
+                    const input = document.getElementById('channelId');
+                    const current = input.value.trim();
+                    input.value = current ? current + ',' + dummyId : dummyId;
+                    logMessage(`✅ チャンネルIDを追加しました: ${dummyId}`, 'success');
+                    saveInputs();
+                });
+
+                // 総数取得
+                document.getElementById('totalFetchBtn').addEventListener('click', function() {
+                    const count = document.getElementById('fetchCount').value || 0;
+                    logMessage(`📊 総数取得を実行 (${count}人分のデータ取得をシミュレート)`, 'success');
+                });
+
+                // 履歴取得
+                document.getElementById('historyBtn').addEventListener('click', function() {
+                    const count = document.getElementById('replyCount').value || 20;
+                    logMessage(`📜 履歴取得を実行 (最新${count}件のメッセージを取得)`, 'success');
+                    const sel = document.getElementById('replySelect');
+                    sel.disabled = false;
+                    sel.innerHTML = '';
+                    for (let i = 1; i <= 5; i++) {
+                        const opt = document.createElement('option');
+                        opt.value = `msg_${i}`;
+                        opt.textContent = `メッセージ #${i} (ID: ${Math.floor(Math.random() * 1000000)})`;
+                        sel.appendChild(opt);
+                    }
+                    logMessage('✅ 履歴の取得が完了しました (デモ)', 'success');
+                    saveInputs();
+                });
+
+                // 投票強制終了
+                document.getElementById('pollStopBtn').addEventListener('click', function() {
+                    logMessage('🗳 投票を強制終了しました (デモ)', 'error');
+                });
+            }
+
+            // --- 初期化 ---
+            function init() {
+                loadInputs();
+                bindSaveEvents();
+                initCollapses();
+                initActions();
+                logMessage('🟢 システムが起動しました (デモモード)', 'success');
+                logMessage('各ボタンはログ出力のみ動作します', 'warning');
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+
+</body>
+</html>
