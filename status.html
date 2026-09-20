@@ -8,17 +8,57 @@
 </head>
 <body>
   <div class="box">
-    <h2>ステータス</h2>
+    <h2>設定</h2>
 
-    <label>Token</label>
-    <input type="password" id="token">
+    <label>Discord トークン</label>
+    <div class="input-row">
+      <input type="password" id="token" placeholder="ここにトークンを入力してください">
+      <button type="button" class="toggle" onclick="toggleToken()">表示</button>
+    </div>
 
-    <label>Status</label>
-    <input type="text" id="status" placeholder="online / idle / dnd / invisible">
+    <label>アプリケーション ID</label>
+    <input type="text" id="app-id" placeholder="123456789012345678">
 
-    <button>START</button>
-    <br>
-    <a href="../index.html" class="back">← 戻る</a>
+    <div class="two-col">
+      <div>
+        <label>ラージイメージキー</label>
+        <input type="text" id="large-image" placeholder="large_image_key">
+      </div>
+      <div>
+        <label>スモールイメージキー</label>
+        <input type="text" id="small-image" placeholder="small_image_key">
+      </div>
+    </div>
+
+    <label>ステータス名</label>
+    <input type="text" id="status-name" placeholder="例: Apex Legends">
+
+    <label>配信 URL (固定)</label>
+    <input type="text" id="stream-url" placeholder="https://www.twitch.tv/discord">
+
+    <div class="btn-row">
+      <button class="exec">実行</button>
+      <button class="stop">停止</button>
+    </div>
   </div>
+
+  <div class="box">
+    <h2>ステータスコントローラー</h2>
+    <div class="log" id="log">画面が開きました。準備完了です。</div>
+  </div>
+
+  <script>
+    function toggleToken() {
+      const input = document.getElementById('token');
+      const btn = event.target;
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '隠す';
+      } else {
+        input.type = 'password';
+        btn.textContent = '表示';
+      }
+    }
+  </script>
 </body>
 </html>
